@@ -57,9 +57,11 @@ var _templatesIndexHtml = []byte(`<!doctype html>
   </head>
   <body>
     <h1>Hello World!</h1>
-    <p>
-      <a href="https://github.com/kevinburke/go-html-boilerplate">View the source code for this server.</a>
-    </p>
+    <form method="POST" action="/submit">
+      <input type="text" name="email" value="" placeholder="default@example.com" />
+      <input type="hidden" name="gorilla.csrf.Token" value="{{ .Token }}" />
+      <input type="submit"  />
+    </form>
   </body>
 </html>
 `)

@@ -9,7 +9,9 @@ package main
 import (
 	"bytes"
 	"flag"
+	"fmt"
 	"html/template"
+	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -19,6 +21,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gorilla/csrf"
 	log "github.com/inconshreveable/log15"
 	"github.com/kevinburke/go-html-boilerplate/assets"
 	"github.com/kevinburke/handlers"
@@ -74,7 +77,7 @@ func render(w http.ResponseWriter, r *http.Request, tpl *template.Template, name
 
 // NewServeMux returns a HTTP handler that covers all routes known to the
 // server.
-func NewServeMux() http.Handler {
+func NewServeMux(key *[32]byte) http.Handler {
 	staticServer := &static{
 		modTime: time.Now().UTC(),
 	}
@@ -83,13 +86,16 @@ func NewServeMux() http.Handler {
 	r.Handle(regexp.MustCompile(`(^/static|^/favicon.ico$)`), []string{"GET"}, handlers.GZip(staticServer))
 	r.HandleFunc(regexp.MustCompile(`^/$`), []string{"GET"}, func(w http.ResponseWriter, r *http.Request) {
 		push(w, "/static/style.css", "style")
+		time.Sleep(300 * time.Millisecond)
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		render(w, r, homepageTpl, "homepage", nil)
+		render(w, r, homepageTpl, "homepage", struct{ Token string }{csrf.Token(r)})
 	})
-	// Add more routes here. Routes not matched will get a 404 error page.
-	// Call rest.RegisterHandler(404, http.HandlerFunc) to provide your own 404
-	// page instead of the default.
-	return r
+	r.HandleFunc(regexp.MustCompile(`^/submit$`), []string{"POST"}, func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("made it to POST submit")
+		fmt.Println(r.FormValue("email"))
+		io.WriteString(w, "ok")
+	})
+	return csrf.Protect(key[:], csrf.Path("/"))(r)
 }
 
 // FileConfig represents the data in a config file.
@@ -145,10 +151,6 @@ func main() {
 		logger.Error("Error getting secret key", "err", err)
 		os.Exit(2)
 	}
-	// You can use the secret key with secretbox
-	// (godoc.org/golang.org/x/crypto/nacl/secretbox/) to generate cookies and
-	// secrets. See flash.go and crypto.go for examples.
-	_ = key
 
 	if c.Port == nil {
 		port, ok := os.LookupEnv("PORT")
@@ -163,7 +165,7 @@ func main() {
 			c.Port = &DefaultPort
 		}
 	}
-	mux := NewServeMux()
+	mux := NewServeMux(key)
 	mux = handlers.UUID(mux)                                   // add UUID header
 	mux = handlers.Server(mux, "go-html-boilerplate/"+Version) // add Server header
 	mux = handlers.Log(mux)                                    // log requests/responses
