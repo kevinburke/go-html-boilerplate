@@ -1,16 +1,35 @@
 go_import_path: github.com/kevinburke/go-html-boilerplate
 
-language: go
 
 go:
   - 1.7
   - 1.8
   - tip
 
-before_script:
-    - go get -u ./...
+dist: trusty
+
+sudo: required
+
+# Not technically required but suppresses 'Ruby' in Job status message.
+language: java
+
+os:
+  - linux
+
+env:
+  - V=0.5.2
+
+before_install:
+  - |
+    sysctl kernel.unprivileged_userns_clone=1
+    OS=linux
+    URL="https://github.com/bazelbuild/bazel/releases/download/${V}/bazel-${V}-installer-${OS}-x86_64.sh"
+    wget -O install.sh "${URL}"
+    chmod +x install.sh
+    ./install.sh --user
+    rm -f install.sh
 
 script:
-    - make race-test
-    - make diff
-    - make bench
+  - make test
+  - make diff
+  - make bench

@@ -1,5 +1,5 @@
 port: 7065
 
 # Run "make generate_cert" to generate these files.
-cert_file: cert.pem
-key_file: key.pem
+cert_file: /Users/kevin/src/github.com/kevinburke/go-html-boilerplate/cert.pem
+key_file: /Users/kevin/src/github.com/kevinburke/go-html-boilerplate/key.pem

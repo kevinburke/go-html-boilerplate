@@ -1,3 +1,4 @@
 *.pem
 releases
 /vendor/*/
+/bazel-*

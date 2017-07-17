@@ -16,11 +16,12 @@ vet:
 ifndef STATICCHECK
 	go get -u honnef.co/go/tools/cmd/staticcheck
 endif
-	staticcheck ./...
-	go vet ./...
+	go list ./... | grep -v vendor | xargs staticcheck
+	go list ./... | grep -v vendor | xargs go vet
 
 test: vet
-	go test ./...
+	@# TODO: https://github.com/bazelbuild/rules_go/issues/167
+	bazel test --test_verbose_timeout_warnings :all //assets:all
 
 race-test: vet
 	go test -race ./...
@@ -38,7 +39,7 @@ endif
 	tmp=$$(mktemp); go list ./... | grep -v vendor | xargs go test -benchtime=2s -bench=. -run='^$$' > "$$tmp" 2>&1 && benchstat "$$tmp"
 
 serve:
-	go install . && go-html-boilerplate
+	bazel run :go-html-boilerplate -- --config=$$PWD/config.yml
 
 generate_cert:
 	go run "$$(go env GOROOT)/src/crypto/tls/generate_cert.go" --host=localhost:7065,127.0.0.1:7065 --ecdsa-curve=P256 --ca=true

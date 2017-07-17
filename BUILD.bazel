@@ -1,0 +1,36 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_prefix", "go_test")
+
+go_prefix("github.com/kevinburke/go-html-boilerplate")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "crypto.go",
+        "flash.go",
+        "main.go",
+        "nopush.go",
+        "push.go",
+    ],
+    visibility = ["//visibility:private"],
+    deps = [
+        "//assets:go_default_library",
+        "//vendor/github.com/inconshreveable/log15:go_default_library",
+        "//vendor/github.com/kevinburke/handlers:go_default_library",
+        "//vendor/github.com/kevinburke/rest:go_default_library",
+        "//vendor/golang.org/x/crypto/nacl/secretbox:go_default_library",
+        "//vendor/gopkg.in/yaml.v2:go_default_library",
+    ],
+)
+
+go_binary(
+    name = "go-html-boilerplate",
+    library = ":go_default_library",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["main_test.go"],
+    library = ":go_default_library",
+    timeout = "short"
+)
