@@ -19,7 +19,8 @@ endif
 	go list ./... | grep -v vendor | xargs staticcheck
 	go list ./... | grep -v vendor | xargs go vet
 
-test: vet
+#test: vet
+test:
 	@# TODO: https://github.com/bazelbuild/rules_go/issues/167
 	bazel test --test_verbose_timeout_warnings :all //assets:all
 
