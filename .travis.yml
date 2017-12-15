@@ -3,13 +3,12 @@ go_import_path: github.com/kevinburke/go-html-boilerplate
 language: go
 
 go:
-  - 1.7
   - 1.8
   - 1.9
   - tip
 
 before_script:
-    - go get -u ./...
+    - go get -t -u ./...
 
 script:
     - make race-test

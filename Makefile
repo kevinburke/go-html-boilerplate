@@ -14,17 +14,17 @@ RELEASE := $(GOPATH)/bin/github-release
 WATCH_TARGETS = static/style.css templates/index.html main.go
 
 test: vet
-	go test ./...
+	go list ./... | grep -v vendor | xargs go test
 
 $(MEGACHECK):
 	go get honnef.co/go/tools/cmd/megacheck
 
 vet: $(MEGACHECK)
-	$(MEGACHECK) --ignore='github.com/kevinburke/go-html-boilerplate/*.go:U1000' ./...
-	go vet ./...
+	go list ./... | grep -v vendor | xargs $(MEGACHECK) --ignore='github.com/kevinburke/go-html-boilerplate/*.go:U1000'
+	go list ./... | grep -v vendor | xargs go vet
 
 race-test: vet
-	go test -race ./...
+	go list ./... | grep -v vendor | xargs go test -race
 
 diff: $(DIFFER)
 	differ $(MAKE) assets
