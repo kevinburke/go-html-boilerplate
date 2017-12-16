@@ -16,8 +16,8 @@
 [[projects]]
   name = "github.com/kevinburke/handlers"
   packages = ["."]
-  revision = "6a4e89dde89747341f4feb16504a67da087db799"
-  version = "0.32"
+  revision = "bd554009c8df447d2e6fd61f2e6eaff4a1b4bb01"
+  version = "0.33"
 
 [[projects]]
   name = "github.com/kevinburke/nacl"
@@ -70,6 +70,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "64e66463a0752c390263bb1a02ef291f12f71abbd63ae0a45618e989f0d2d56c"
+  inputs-digest = "f83ba152ce78e1648dc7aa1beca7cfd4a5b58aad8650762eae80e224546b34fb"
   solver-name = "gps-cdcl"
   solver-version = 1
