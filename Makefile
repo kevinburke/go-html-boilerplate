@@ -1,6 +1,6 @@
 .PHONY: assets static templates
 
-SHELL = /bin/bash
+SHELL = /bin/bash -o pipefail
 
 BENCHSTAT := $(GOPATH)/bin/benchstat
 BUMP_VERSION := $(GOPATH)/bin/bump_version
@@ -11,7 +11,8 @@ MEGACHECK := $(GOPATH)/bin/megacheck
 RELEASE := $(GOPATH)/bin/github-release
 
 # Add files that change frequently to this list.
-WATCH_TARGETS = static/style.css templates/index.html main.go
+WATCH_TARGETS = $(shell find ./static ./templates -type f)
+GO_FILES = $(shell find . -name '*.go')
 
 test: vet
 	go list ./... | grep -v vendor | xargs go test
@@ -35,23 +36,29 @@ $(BENCHSTAT):
 bench: | $(BENCHSTAT)
 	tmp=$$(mktemp); go list ./... | grep -v vendor | xargs go test -benchtime=2s -bench=. -run='^$$' > "$$tmp" 2>&1 && $(BENCHSTAT) "$$tmp"
 
-serve:
-	go install . && go-html-boilerplate
+$(GOPATH)/bin/go-html-boilerplate: $(GO_FILES)
+	go install .
+
+serve: $(GOPATH)/bin/go-html-boilerplate
+	go-html-boilerplate
 
 generate_cert:
 	go run "$$(go env GOROOT)/src/crypto/tls/generate_cert.go" --host=localhost:7065,127.0.0.1:7065 --ecdsa-curve=P256 --ca=true
 
 $(GO_BINDATA):
-	go get -u github.com/jteeuwen/go-bindata/...
+	go get -u github.com/kevinburke/go-bindata/...
 
-assets: | $(GO_BINDATA)
+assets/bindata.go: $(WATCH_TARGETS) | $(GO_BINDATA)
+	echo $(WATCH_TARGETS)
 	$(GO_BINDATA) -o=assets/bindata.go --nocompress --nometadata --pkg=assets templates/... static/...
+
+assets: assets/bindata.go
 
 $(JUSTRUN):
 	go get -u github.com/jmhodges/justrun
 
 watch: | $(JUSTRUN)
-	$(JUSTRUN) -v --delay=100ms -c 'make assets serve' $(WATCH_TARGETS)
+	$(JUSTRUN) -v --delay=100ms -c 'make assets serve' $(WATCH_TARGETS) $(GO_FILES)
 
 $(BUMP_VERSION):
 	go get github.com/Shyp/bump_version

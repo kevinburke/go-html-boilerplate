@@ -20,6 +20,8 @@ import (
 	"time"
 
 	log "github.com/inconshreveable/log15"
+	// When you copy this project, change this to the name of your project,
+	// otherwise you'll get inexplicable 404's.
 	"github.com/kevinburke/go-html-boilerplate/assets"
 	"github.com/kevinburke/handlers"
 	"github.com/kevinburke/nacl"
@@ -141,10 +143,16 @@ func main() {
 		logger.Error("Couldn't find config file", "err", err)
 		os.Exit(2)
 	}
-	key, err := nacl.Load(c.SecretKey)
-	if err != nil {
-		logger.Error("Error getting secret key", "err", err)
-		os.Exit(2)
+	var key nacl.Key
+	if c.SecretKey == "" {
+		logger.Warn("No secret key specified, generating a random one")
+		key = nacl.NewKey()
+	} else {
+		key, err = nacl.Load(c.SecretKey)
+		if err != nil {
+			logger.Error("Error getting secret key", "err", err)
+			os.Exit(2)
+		}
 	}
 	// You can use the secret key with secretbox
 	// (godoc.org/github.com/kevinburke/nacl/secretbox/) to generate cookies and
@@ -179,6 +187,7 @@ func main() {
 		logger.Info("Started server", "protocol", "http", "port", *c.Port)
 		http.Serve(ln, mux)
 	} else {
+		mux = handlers.STS(mux) // set Strict-Transport-Security header
 		if c.CertFile == "" {
 			c.CertFile = "cert.pem"
 		}
