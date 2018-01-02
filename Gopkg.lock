@@ -9,19 +9,27 @@
 
 [[projects]]
   name = "github.com/inconshreveable/log15"
-  packages = [".","term"]
+  packages = [
+    ".",
+    "term"
+  ]
   revision = "0decfc6c20d9ca0ad143b0e89dcaa20f810b4fb3"
   version = "v2.13"
 
 [[projects]]
   name = "github.com/kevinburke/handlers"
   packages = ["."]
-  revision = "bd554009c8df447d2e6fd61f2e6eaff4a1b4bb01"
-  version = "0.33"
+  revision = "e08aa407475817a6bcbb10cd2ded24c3c16b8e5d"
+  version = "0.35"
 
 [[projects]]
   name = "github.com/kevinburke/nacl"
-  packages = [".","onetimeauth","randombytes","secretbox"]
+  packages = [
+    ".",
+    "onetimeauth",
+    "randombytes",
+    "secretbox"
+  ]
   revision = "247b7cfd826641547b7ee8b89c785901c4e94b0b"
   version = "0.5"
 
@@ -52,7 +60,10 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/crypto"
-  packages = ["poly1305","salsa20/salsa"]
+  packages = [
+    "poly1305",
+    "salsa20/salsa"
+  ]
   revision = "94eea52f7b742c7cbe0b03b22f0c4c8631ece122"
 
 [[projects]]
@@ -70,6 +81,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f83ba152ce78e1648dc7aa1beca7cfd4a5b58aad8650762eae80e224546b34fb"
+  inputs-digest = "904883012e5c140ba0cdc656bd2a4d3617df903ae1383548c1278b130fc04ba1"
   solver-name = "gps-cdcl"
   solver-version = 1
