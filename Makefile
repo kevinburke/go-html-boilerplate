@@ -13,6 +13,7 @@ RELEASE := $(GOPATH)/bin/github-release
 # Add files that change frequently to this list.
 WATCH_TARGETS = $(shell find ./static ./templates -type f)
 GO_FILES = $(shell find . -name '*.go')
+GO_NOASSET_FILES := $(filter-out ./assets/bindata.go,$(GO_FILES))
 
 test: vet
 	go list ./... | grep -v vendor | xargs go test
@@ -49,7 +50,6 @@ $(GO_BINDATA):
 	go get -u github.com/kevinburke/go-bindata/...
 
 assets/bindata.go: $(WATCH_TARGETS) | $(GO_BINDATA)
-	echo $(WATCH_TARGETS)
 	$(GO_BINDATA) -o=assets/bindata.go --nocompress --nometadata --pkg=assets templates/... static/...
 
 assets: assets/bindata.go
@@ -58,7 +58,7 @@ $(JUSTRUN):
 	go get -u github.com/jmhodges/justrun
 
 watch: | $(JUSTRUN)
-	$(JUSTRUN) -v --delay=100ms -c 'make assets serve' $(WATCH_TARGETS) $(GO_FILES)
+	$(JUSTRUN) -v --delay=100ms -c 'make assets serve' $(WATCH_TARGETS) $(GO_NOASSET_FILES)
 
 $(BUMP_VERSION):
 	go get github.com/Shyp/bump_version
