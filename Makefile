@@ -41,7 +41,7 @@ $(GOPATH)/bin/go-html-boilerplate: $(GO_FILES)
 	go install .
 
 serve: $(GOPATH)/bin/go-html-boilerplate
-	go-html-boilerplate
+	$(GOPATH)/bin/go-html-boilerplate
 
 generate_cert:
 	go run "$$(go env GOROOT)/src/crypto/tls/generate_cert.go" --host=localhost:7065,127.0.0.1:7065 --ecdsa-curve=P256 --ca=true

@@ -131,6 +131,7 @@ type FileConfig struct {
 var cfg = flag.String("config", "config.yml", "Path to a config file")
 
 func main() {
+	start := time.Now()
 	flag.Parse()
 	data, err := ioutil.ReadFile(*cfg)
 	c := new(FileConfig)
@@ -184,7 +185,8 @@ func main() {
 			logger.Error("Error listening", "addr", addr, "err", err)
 			os.Exit(2)
 		}
-		logger.Info("Started server", "protocol", "http", "port", *c.Port)
+		logger.Info("Started server", "time", time.Since(start).Round(100*time.Microsecond),
+			"protocol", "http", "port", *c.Port)
 		http.Serve(ln, mux)
 	} else {
 		mux = handlers.STS(mux) // set Strict-Transport-Security header
@@ -202,7 +204,7 @@ func main() {
 			logger.Error("Could not find a key file; generate using 'make generate_cert'", "file", c.KeyFile)
 			os.Exit(2)
 		}
-		logger.Info("Starting server", "protocol", "https", "port", *c.Port)
+		logger.Info("Starting server", "time", time.Since(start).Round(100*time.Microsecond), "protocol", "https", "port", *c.Port)
 		listenErr := http.ListenAndServeTLS(addr, c.CertFile, c.KeyFile, mux)
 		logger.Error("server shut down", "err", listenErr)
 	}
