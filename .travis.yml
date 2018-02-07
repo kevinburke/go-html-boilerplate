@@ -3,9 +3,8 @@ go_import_path: github.com/kevinburke/go-html-boilerplate
 language: go
 
 go:
-  - 1.8
-  - 1.9
-  - tip
+  - 1.9.x
+  - master
 
 before_script:
     - go get -t -u ./...
