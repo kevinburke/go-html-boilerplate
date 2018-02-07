@@ -33,7 +33,7 @@ import (
 var DefaultPort = 7065
 
 // The server's Version.
-const Version = "0.5"
+const Version = "0.6"
 
 var homepageTpl *template.Template
 var logger log.Logger
