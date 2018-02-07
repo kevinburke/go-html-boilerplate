@@ -191,14 +191,14 @@ func main() {
 	} else {
 		mux = handlers.STS(mux) // set Strict-Transport-Security header
 		if c.CertFile == "" {
-			c.CertFile = "cert.pem"
+			c.CertFile = "certs/leaf.pem"
 		}
 		if _, err := os.Stat(c.CertFile); os.IsNotExist(err) {
 			logger.Error("Could not find a cert file; generate using 'make generate_cert'", "file", c.CertFile)
 			os.Exit(2)
 		}
 		if c.KeyFile == "" {
-			c.KeyFile = "key.pem"
+			c.KeyFile = "certs/leaf.key"
 		}
 		if _, err := os.Stat(c.KeyFile); os.IsNotExist(err) {
 			logger.Error("Could not find a key file; generate using 'make generate_cert'", "file", c.KeyFile)

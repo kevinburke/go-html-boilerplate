@@ -5,6 +5,7 @@ SHELL = /bin/bash -o pipefail
 BENCHSTAT := $(GOPATH)/bin/benchstat
 BUMP_VERSION := $(GOPATH)/bin/bump_version
 DIFFER := $(GOPATH)/bin/differ
+GENERATE_TLS_CERT = $(GOPATH)/bin/generate-tls-cert
 GO_BINDATA := $(GOPATH)/bin/go-bindata
 JUSTRUN := $(GOPATH)/bin/justrun
 MEGACHECK := $(GOPATH)/bin/megacheck
@@ -43,8 +44,15 @@ $(GOPATH)/bin/go-html-boilerplate: $(GO_FILES)
 serve: $(GOPATH)/bin/go-html-boilerplate
 	$(GOPATH)/bin/go-html-boilerplate
 
-generate_cert:
-	go run "$$(go env GOROOT)/src/crypto/tls/generate_cert.go" --host=localhost:7065,127.0.0.1:7065 --ecdsa-curve=P256 --ca=true
+$(GENERATE_TLS_CERT):
+	go get -u github.com/Shyp/generate-tls-cert
+
+certs/leaf.pem: | $(GENERATE_TLS_CERT)
+	mkdir -p certs
+	cd certs && $(GENERATE_TLS_CERT) --host=localhost,127.0.0.1
+
+# Generate TLS certificates for local development.
+generate_cert: certs/leaf.pem | $(GENERATE_TLS_CERT)
 
 $(GO_BINDATA):
 	go get -u github.com/kevinburke/go-bindata/...
