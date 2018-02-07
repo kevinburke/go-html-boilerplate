@@ -6,6 +6,7 @@
 package assets
 
 import (
+	"crypto/sha256"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -15,8 +16,9 @@ import (
 )
 
 type asset struct {
-	bytes []byte
-	info  os.FileInfo
+	bytes  []byte
+	info   os.FileInfo
+	digest [sha256.Size]byte
 }
 
 type bindataFileInfo struct {
@@ -75,7 +77,7 @@ func templatesIndexHtml() (*asset, error) {
 	}
 
 	info := bindataFileInfo{name: "templates/index.html", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
-	a := &asset{bytes: bytes, info: info}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xcb, 0xdf, 0xd7, 0x9c, 0x4a, 0xce, 0x89, 0xdf, 0xa8, 0x86, 0x63, 0x3a, 0x37, 0x31, 0xd8, 0x89, 0x79, 0x16, 0x4e, 0x55, 0x55, 0x5b, 0x75, 0x34, 0x5d, 0x10, 0xed, 0xc0, 0xed, 0xd5, 0xdf, 0xad}}
 	return a, nil
 }
 
@@ -97,7 +99,7 @@ func staticStyleCss() (*asset, error) {
 	}
 
 	info := bindataFileInfo{name: "static/style.css", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
-	a := &asset{bytes: bytes, info: info}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xf6, 0x2e, 0x3c, 0x9b, 0x2a, 0xb2, 0x32, 0x4c, 0x7d, 0xe0, 0xa5, 0x70, 0x8b, 0x9d, 0x33, 0xf2, 0x4c, 0x1c, 0x32, 0xf9, 0x79, 0xfc, 0x1a, 0x74, 0xd9, 0x1d, 0xae, 0xc, 0x87, 0xf4, 0xdb, 0xa6}}
 	return a, nil
 }
 
@@ -116,6 +118,12 @@ func Asset(name string) ([]byte, error) {
 	return nil, fmt.Errorf("Asset %s not found", name)
 }
 
+// AssetString returns the asset contents as a string (instead of a []byte).
+func AssetString(name string) (string, error) {
+	data, err := Asset(name)
+	return string(data), err
+}
+
 // MustAsset is like Asset but panics when Asset would return an error.
 // It simplifies safe initialization of global variables.
 func MustAsset(name string) []byte {
@@ -125,6 +133,12 @@ func MustAsset(name string) []byte {
 	}
 
 	return a
+}
+
+// MustAssetString is like AssetString but panics when Asset would return an
+// error. It simplifies safe initialization of global variables.
+func MustAssetString(name string) string {
+	return string(MustAsset(name))
 }
 
 // AssetInfo loads and returns the asset info for the given name.
@@ -140,6 +154,33 @@ func AssetInfo(name string) (os.FileInfo, error) {
 		return a.info, nil
 	}
 	return nil, fmt.Errorf("AssetInfo %s not found", name)
+}
+
+// AssetDigest returns the digest of the file with the given name. It returns an
+// error if the asset could not be found or the digest could not be loaded.
+func AssetDigest(name string) ([sha256.Size]byte, error) {
+	canonicalName := strings.Replace(name, "\\", "/", -1)
+	if f, ok := _bindata[canonicalName]; ok {
+		a, err := f()
+		if err != nil {
+			return [sha256.Size]byte{}, fmt.Errorf("AssetDigest %s can't read by error: %v", name, err)
+		}
+		return a.digest, nil
+	}
+	return [sha256.Size]byte{}, fmt.Errorf("AssetDigest %s not found", name)
+}
+
+// Digests returns a map of all known files and their checksums.
+func Digests() (map[string][sha256.Size]byte, error) {
+	mp := make(map[string][sha256.Size]byte, len(_bindata))
+	for name := range _bindata {
+		a, err := _bindata[name]()
+		if err != nil {
+			return nil, err
+		}
+		mp[name] = a.digest
+	}
+	return mp, nil
 }
 
 // AssetNames returns the names of the assets.
@@ -167,9 +208,9 @@ var _bindata = map[string]func() (*asset, error){
 //       img/
 //         a.png
 //         b.png
-// then AssetDir("data") would return []string{"foo.txt", "img"}
-// AssetDir("data/img") would return []string{"a.png", "b.png"}
-// AssetDir("foo.txt") and AssetDir("notexist") would return an error
+// then AssetDir("data") would return []string{"foo.txt", "img"},
+// AssetDir("data/img") would return []string{"a.png", "b.png"},
+// AssetDir("foo.txt") and AssetDir("notexist") would return an error, and
 // AssetDir("") will return []string{"data"}.
 func AssetDir(name string) ([]string, error) {
 	node := _bintree
@@ -207,7 +248,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 	}},
 }}
 
-// RestoreAsset restores an asset under the given directory
+// RestoreAsset restores an asset under the given directory.
 func RestoreAsset(dir, name string) error {
 	data, err := Asset(name)
 	if err != nil {
@@ -228,7 +269,7 @@ func RestoreAsset(dir, name string) error {
 	return os.Chtimes(_filePath(dir, name), info.ModTime(), info.ModTime())
 }
 
-// RestoreAssets restores an asset under the given directory recursively
+// RestoreAssets restores an asset under the given directory recursively.
 func RestoreAssets(dir, name string) error {
 	children, err := AssetDir(name)
 	// File
