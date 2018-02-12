@@ -8,6 +8,8 @@ package main
 
 import (
 	"bytes"
+	"crypto/sha256"
+	"encoding/base64"
 	"flag"
 	"html/template"
 	"io/ioutil"
@@ -37,10 +39,34 @@ const Version = "0.6"
 
 var homepageTpl *template.Template
 var logger log.Logger
+var digests map[string][sha256.Size]byte
+
+// hashurl returns a hash of the resource with the given key
+func hashurl(key string) template.URL {
+	d, ok := digests[strings.TrimPrefix(key, "/")]
+	if !ok {
+		return ""
+	}
+	// we don't actually need the whole hash.
+	return template.URL("s=" + b64(d[:12]))
+}
+
+func b64(digest []byte) string {
+	return strings.TrimRight(base64.URLEncoding.EncodeToString(digest), "=")
+}
 
 func init() {
+	var err error
+	digests, err = assets.Digests()
+	if err != nil {
+		panic(err)
+	}
 	homepageHTML := assets.MustAssetString("templates/index.html")
-	homepageTpl = template.Must(template.New("homepage").Parse(homepageHTML))
+	homepageTpl = template.Must(
+		template.New("homepage").Option("missingkey=error").Funcs(template.FuncMap{
+			"hashurl": hashurl,
+		}).Parse(homepageHTML),
+	)
 	logger = handlers.Logger
 
 	// Add more templates here.
@@ -53,6 +79,8 @@ type static struct {
 	modTime time.Time
 }
 
+var expires = time.Date(2050, time.January, 1, 0, 0, 0, 0, time.UTC).Format(time.RFC1123)
+
 func (s *static) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/favicon.ico" {
 		r.URL.Path = "/static/favicon.ico"
@@ -61,6 +89,11 @@ func (s *static) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		rest.NotFound(w, r)
 		return
+	}
+	// with the hashurl implementation below, we can set a super-long content
+	// expiry and ensure content is never stale.
+	if query := r.URL.Query(); query.Get("s") != "" {
+		w.Header().Set("Expires", expires)
 	}
 	http.ServeContent(w, r, r.URL.Path, s.modTime, bytes.NewReader(bits))
 }
@@ -85,7 +118,6 @@ func NewServeMux() http.Handler {
 	r := new(handlers.Regexp)
 	r.Handle(regexp.MustCompile(`(^/static|^/favicon.ico$)`), []string{"GET"}, handlers.GZip(staticServer))
 	r.HandleFunc(regexp.MustCompile(`^/$`), []string{"GET"}, func(w http.ResponseWriter, r *http.Request) {
-		push(w, "/static/style.css", "style")
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		render(w, r, homepageTpl, "homepage", nil)
 	})
