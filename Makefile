@@ -45,7 +45,7 @@ serve: $(GOPATH)/bin/go-html-boilerplate
 	$(GOPATH)/bin/go-html-boilerplate
 
 $(GENERATE_TLS_CERT):
-	go get -u github.com/Shyp/generate-tls-cert
+	go get -u github.com/kevinburke/generate-tls-cert
 
 certs/leaf.pem: | $(GENERATE_TLS_CERT)
 	mkdir -p certs
@@ -69,7 +69,7 @@ watch: | $(JUSTRUN)
 	$(JUSTRUN) -v --delay=100ms -c 'make assets serve' $(WATCH_TARGETS) $(GO_NOASSET_FILES)
 
 $(BUMP_VERSION):
-	go get github.com/Shyp/bump_version
+	go get github.com/kevinburke/bump_version
 
 $(DIFFER):
 	go get github.com/kevinburke/differ
