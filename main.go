@@ -11,6 +11,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"flag"
+	"fmt"
 	"html/template"
 	"io/ioutil"
 	"net"
@@ -161,10 +162,15 @@ type FileConfig struct {
 }
 
 var cfg = flag.String("config", "config.yml", "Path to a config file")
+var version = flag.Bool("version", false, "Print the version string and exit")
 
 func main() {
 	start := time.Now()
 	flag.Parse()
+	if *version {
+		fmt.Fprintf(os.Stderr, "go-html-boilerplate version %s\n", Version)
+		os.Exit(0)
+	}
 	data, err := ioutil.ReadFile(*cfg)
 	c := new(FileConfig)
 	if err == nil {
