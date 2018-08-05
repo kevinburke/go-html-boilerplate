@@ -30,7 +30,7 @@ race-test: vet
 	go list ./... | grep -v vendor | xargs go test -race
 
 diff: $(DIFFER)
-	differ $(MAKE) assets
+	$(DIFFER) $(MAKE) assets
 
 $(BENCHSTAT):
 	go get golang.org/x/perf/cmd/benchstat
