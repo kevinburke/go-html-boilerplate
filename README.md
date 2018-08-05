@@ -11,7 +11,10 @@ for some of the things you'll usually want to add to an HTML web server:
 - Loading configuration from a config file
 - Flash success and error messages
 
-[Read more about the choices and the feature set found here][post].
+[Read more about the choices and the feature set found here][post]. You can [see
+an example project using go-html-boilerplate here][multi-emailer].
+
+[multi-emailer]: https://github.com/kevinburke/multi-emailer
 
 Feel free to adapt the project as you see fit; that should be pretty easy to
 do since no one component does too much on its own, and all of them operate on
