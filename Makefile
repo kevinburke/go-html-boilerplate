@@ -8,7 +8,6 @@ DIFFER := $(GOPATH)/bin/differ
 GENERATE_TLS_CERT = $(GOPATH)/bin/generate-tls-cert
 GO_BINDATA := $(GOPATH)/bin/go-bindata
 JUSTRUN := $(GOPATH)/bin/justrun
-MEGACHECK := $(GOPATH)/bin/megacheck
 RELEASE := $(GOPATH)/bin/github-release
 
 # Add files that change frequently to this list.
@@ -19,11 +18,8 @@ GO_NOASSET_FILES := $(filter-out ./assets/bindata.go,$(GO_FILES))
 test: vet
 	go list ./... | grep -v vendor | xargs go test
 
-$(MEGACHECK):
-	go get honnef.co/go/tools/cmd/megacheck
-
-vet: $(MEGACHECK)
-	go list ./... | grep -v vendor | xargs $(MEGACHECK) --ignore='github.com/kevinburke/go-html-boilerplate/*.go:U1000'
+vet:
+	staticcheck ./...
 	go list ./... | grep -v vendor | xargs go vet
 
 race-test: vet

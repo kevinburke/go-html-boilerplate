@@ -13,7 +13,6 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
@@ -171,7 +170,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "go-html-boilerplate version %s\n", Version)
 		os.Exit(0)
 	}
-	data, err := ioutil.ReadFile(*cfg)
+	data, err := os.ReadFile(*cfg)
 	c := new(FileConfig)
 	if err == nil {
 		if err := yaml.Unmarshal(data, c); err != nil {

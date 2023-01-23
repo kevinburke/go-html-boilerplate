@@ -4,21 +4,15 @@ package main
 
 import (
 	"encoding/base64"
-	"errors"
 
 	"github.com/kevinburke/nacl"
 	"github.com/kevinburke/nacl/secretbox"
 )
 
-var errWrongLength = errors.New("Secret key has wrong length. Should be a 64-byte hex string")
-
 func opaqueByte(b []byte, secretKey nacl.Key) string {
 	out := secretbox.EasySeal(b, secretKey)
 	return base64.URLEncoding.EncodeToString(out)
 }
-
-var errTooShort = errors.New("Encrypted string is too short")
-var errInvalidInput = errors.New("Could not decrypt invalid input")
 
 func unopaqueByte(compressed string, secretKey nacl.Key) ([]byte, error) {
 	encrypted, err := base64.URLEncoding.DecodeString(compressed)

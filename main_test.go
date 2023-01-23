@@ -1,7 +1,7 @@
 package main
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -36,7 +36,7 @@ func BenchmarkHomepage(b *testing.B) {
 		if res.StatusCode != 200 {
 			b.Fatalf("GET /: expected code 200, got %d", res.StatusCode)
 		}
-		n, err := ioutil.ReadAll(res.Body)
+		n, err := io.ReadAll(res.Body)
 		if err != nil {
 			b.Fatal(err)
 		}
