@@ -8,6 +8,26 @@ import (
 	"sync"
 
 	log "github.com/inconshreveable/log15"
+	"github.com/kevinburke/rest/restclient"
+	"github.com/kevinburke/rest/resterror"
+)
+
+type (
+	// Backwards compatibility
+	Error      = resterror.Error
+	Client     = restclient.Client
+	Transport  = restclient.Transport
+	UploadType = restclient.UploadType
+)
+
+var (
+	NewClient          = restclient.New
+	NewBearerClient    = restclient.NewBearerClient
+	DefaultTransport   = restclient.DefaultTransport
+	JSON               = restclient.JSON
+	FormURLEncoded     = restclient.FormURLEncoded
+	Version            = restclient.Version
+	DefaultErrorParser = restclient.DefaultErrorParser
 )
 
 const jsonContentType = "application/json; charset=utf-8"
@@ -15,41 +35,10 @@ const jsonContentType = "application/json; charset=utf-8"
 // Logger logs information about incoming requests.
 var Logger log.Logger = log.New()
 
-// Error implements the HTTP Problem spec laid out here:
-// https://tools.ietf.org/html/draft-ietf-appsawg-http-problem-03
-type Error struct {
-	// The main error message. Should be short enough to fit in a phone's
-	// alert box. Do not end this message with a period.
-	Title string `json:"title"`
-
-	// Id of this error message ("forbidden", "invalid_parameter", etc)
-	ID string `json:"id"`
-
-	// More information about what went wrong.
-	Detail string `json:"detail,omitempty"`
-
-	// Path to the object that's in error.
-	Instance string `json:"instance,omitempty"`
-
-	// Link to more information (Zendesk, API docs, etc)
-	Type       string `json:"type,omitempty"`
-	StatusCode int    `json:"status_code,omitempty"`
-}
-
-func (e *Error) Error() string {
-	return e.Title
-}
-
-func (e *Error) String() string {
-	if e.Detail != "" {
-		return fmt.Sprintf("rest: %s. %s", e.Title, e.Detail)
-	} else {
-		return fmt.Sprintf("rest: %s", e.Title)
-	}
-}
-
-var handlerMap = make(map[int]http.Handler)
-var handlerMu sync.RWMutex
+var (
+	handlerMap = make(map[int]http.Handler)
+	handlerMu  sync.RWMutex
+)
 
 // RegisterHandler registers the given HandlerFunc to serve HTTP requests for
 // the given status code. Use CtxErr and CtxDomain to retrieve extra values set
@@ -85,9 +74,9 @@ func ServerError(w http.ResponseWriter, r *http.Request, err error) {
 }
 
 var serverError = Error{
-	StatusCode: http.StatusInternalServerError,
-	ID:         "server_error",
-	Title:      "Unexpected server error. Please try again",
+	Status: http.StatusInternalServerError,
+	ID:     "server_error",
+	Title:  "Unexpected server error. Please try again",
 }
 
 func defaultServerError(w http.ResponseWriter, r *http.Request, err error) {
@@ -103,9 +92,9 @@ func defaultServerError(w http.ResponseWriter, r *http.Request, err error) {
 }
 
 var notFound = Error{
-	Title:      "Resource not found",
-	ID:         "not_found",
-	StatusCode: http.StatusNotFound,
+	Title:  "Resource not found",
+	ID:     "not_found",
+	Status: http.StatusNotFound,
 }
 
 // NotFound returns a 404 Not Found error to the client.
@@ -143,12 +132,40 @@ func BadRequest(w http.ResponseWriter, r *http.Request, err *Error) {
 	}
 }
 
+var gone = Error{
+	Title:  "Resource is gone",
+	ID:     "gone",
+	Status: http.StatusGone,
+}
+
+// Gone responds to the request with a 410 Gone error message
+func Gone(w http.ResponseWriter, r *http.Request) {
+	handlerMu.RLock()
+	f, ok := handlerMap[http.StatusGone]
+	handlerMu.RUnlock()
+	if ok {
+		f.ServeHTTP(w, r)
+	} else {
+		defaultGone(w, r)
+	}
+}
+
+func defaultGone(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", jsonContentType)
+	w.WriteHeader(http.StatusGone)
+	g := gone
+	g.Instance = r.URL.Path
+	if err := json.NewEncoder(w).Encode(g); err != nil {
+		Logger.Info("Couldn't write error", "path", r.URL.Path, "code", 404, "err", err)
+	}
+}
+
 func defaultBadRequest(w http.ResponseWriter, r *http.Request, err *Error) {
 	if err == nil {
 		panic("rest: no error to write")
 	}
-	if err.StatusCode == 0 {
-		err.StatusCode = http.StatusBadRequest
+	if err.Status == 0 {
+		err.Status = http.StatusBadRequest
 	}
 	Logger.Info("Bad request", "code", 400, "method", r.Method, "path", r.URL.Path, "err", err)
 	w.Header().Set("Content-Type", jsonContentType)
@@ -159,15 +176,15 @@ func defaultBadRequest(w http.ResponseWriter, r *http.Request, err *Error) {
 }
 
 var notAllowed = Error{
-	Title:      "Method not allowed",
-	ID:         "method_not_allowed",
-	StatusCode: http.StatusMethodNotAllowed,
+	Title:  "Method not allowed",
+	ID:     "method_not_allowed",
+	Status: http.StatusMethodNotAllowed,
 }
 
 var authenticate = Error{
-	Title:      "Unauthorized. Please include your API credentials",
-	ID:         "unauthorized",
-	StatusCode: http.StatusUnauthorized,
+	Title:  "Unauthorized. Please include your API credentials",
+	ID:     "unauthorized",
+	Status: http.StatusUnauthorized,
 }
 
 // NotAllowed returns a generic HTTP 405 Not Allowed status and response body

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"regexp"
 	"strings"
@@ -32,6 +33,16 @@ func (h *Regexp) Handle(pattern *regexp.Regexp, methods []string, handler http.H
 	})
 }
 
+// HandleString is like Handle, but will compile s to a regexp first.
+// If s is not a valid regexp HandleString will panic.
+func (h *Regexp) HandleString(s string, methods []string, handler http.Handler) {
+	rx, err := regexp.Compile(s)
+	if err != nil {
+		panic(fmt.Sprintf("handlers: could not compile pattern %q to a regex: got error %v", s, err))
+	}
+	h.Handle(rx, methods, handler)
+}
+
 // HandleFunc calls the provided HandlerFunc for requests whose URL matches the
 // given pattern and HTTP method. The first matching route will get called.
 // If methods is nil, all HTTP methods are allowed. If GET is in the list of
@@ -44,6 +55,26 @@ func (h *Regexp) HandleFunc(pattern *regexp.Regexp, methods []string, handler fu
 	})
 }
 
+// HandleStringFunc is like HandleFunc, but will compile s to a regexp first.
+// If s is not a valid regexp HandleStringFunc will panic.
+func (h *Regexp) HandleStringFunc(s string, methods []string, handler func(http.ResponseWriter, *http.Request)) {
+	rx, err := regexp.Compile(s)
+	if err != nil {
+		panic(fmt.Sprintf("handlers: could not compile pattern %q to a regex: got error %v", s, err))
+	}
+	h.HandleFunc(rx, methods, handler)
+}
+
+var allMethods = []string{
+	"GET",
+	"POST",
+	"PUT",
+	"PATCH",
+	"DELETE",
+	"CONNECT",
+	"TRACE",
+}
+
 // ServeHTTP checks all registered routes in turn for a match, and calls
 // handler.ServeHTTP on the first matching handler. If no routes match,
 // StatusMethodNotAllowed will be rendered.
@@ -54,7 +85,7 @@ func (h *Regexp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	for _, route := range h.routes {
 		if route.pattern.MatchString(r.URL.Path) {
 			oneMatch = true
-			if route.methods == nil {
+			if route.methods == nil && upperMethod != "OPTIONS" {
 				route.handler.ServeHTTP(w, r)
 				return
 			}
@@ -71,7 +102,12 @@ func (h *Regexp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if upperMethod == "OPTIONS" {
-		methods := strings.Join(append(allowed, "OPTIONS"), ", ")
+		var methods string
+		if len(allowed) > 0 {
+			methods = strings.Join(append(allowed, "OPTIONS"), ", ")
+		} else {
+			methods = strings.Join(append(allMethods, "OPTIONS"), ", ")
+		}
 		w.Header().Set("Allow", methods)
 		return
 	}
