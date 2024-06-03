@@ -41,7 +41,7 @@ serve: $(GOPATH)/bin/go-html-boilerplate
 	$(GOPATH)/bin/go-html-boilerplate
 
 $(GENERATE_TLS_CERT):
-	go get -u github.com/kevinburke/generate-tls-cert
+	go install github.com/kevinburke/generate-tls-cert@latest
 
 certs/leaf.pem: | $(GENERATE_TLS_CERT)
 	mkdir -p certs
