@@ -215,7 +215,7 @@ func main() {
 	mux = handlers.Server(mux, "go-html-boilerplate/"+Version) // add Server header
 	mux = handlers.Log(mux)                                    // log requests/responses
 	mux = handlers.Duration(mux)                               // add Duration header
-	addr := ":" + strconv.Itoa(*c.Port)
+	addr := net.JoinHostPort("localhost", strconv.Itoa(*c.Port))
 	if c.HTTPOnly {
 		ln, err := net.Listen("tcp", addr)
 		if err != nil {
