@@ -1,22 +1,21 @@
 module github.com/kevinburke/go-html-boilerplate
 
-go 1.20
+go 1.23.0
 
 require (
-	github.com/inconshreveable/log15 v2.16.0+incompatible
-	github.com/kevinburke/handlers v0.0.0-20221122041956-e19cda53bf92
-	github.com/kevinburke/nacl v0.0.0-20210405173606-cd9060f5f776
-	github.com/kevinburke/rest v0.0.0-20230118171807-ac09c3f0ec45
-	gopkg.in/yaml.v2 v2.4.0
+	github.com/goccy/go-yaml v1.18.0
+	github.com/inconshreveable/log15 v3.0.0-testing.5+incompatible
+	github.com/kevinburke/handlers v0.0.0-20231107221000-2cbf18acad0d
+	github.com/kevinburke/nacl v0.0.0-20250518034207-4fa338b68f84
+	github.com/kevinburke/rest v0.0.0-20240617045629-3ed0ad3487f0
 )
 
 require (
-	github.com/go-stack/stack v1.7.0 // indirect
-	github.com/gofrs/uuid v4.3.1+incompatible // indirect
-	github.com/mattn/go-colorable v0.0.9 // indirect
-	github.com/mattn/go-isatty v0.0.3 // indirect
-	golang.org/x/crypto v0.0.0-20171128194009-94eea52f7b74 // indirect
-	golang.org/x/sys v0.4.0 // indirect
-	golang.org/x/term v0.4.0 // indirect
-	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
+	github.com/go-stack/stack v1.8.1 // indirect
+	github.com/gofrs/uuid v4.4.0+incompatible // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-isatty v0.0.16 // indirect
+	golang.org/x/crypto v0.38.0 // indirect
+	golang.org/x/sys v0.33.0 // indirect
+	golang.org/x/term v0.32.0 // indirect
 )
