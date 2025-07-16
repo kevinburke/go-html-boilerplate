@@ -13,6 +13,7 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
+	"log/slog"
 	"net"
 	"net/http"
 	"os"
@@ -21,14 +22,14 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/inconshreveable/log15"
 	// When you copy this project, change this to the name of your project,
 	// otherwise you'll get inexplicable 404's.
 	"github.com/kevinburke/go-html-boilerplate/assets"
+
+	"github.com/goccy/go-yaml"
 	"github.com/kevinburke/handlers"
 	"github.com/kevinburke/nacl"
 	"github.com/kevinburke/rest"
-	yaml "gopkg.in/yaml.v2"
 )
 
 // DefaultPort is the listening port if no other port is specified.
@@ -38,7 +39,7 @@ var DefaultPort = 7065
 const Version = "0.7"
 
 var homepageTpl *template.Template
-var logger log.Logger
+var logger *slog.Logger
 var digests map[string][sha256.Size]byte
 
 // hashurl returns a hash of the resource with the given key
