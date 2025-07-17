@@ -79,5 +79,5 @@ ifndef version
 	@echo "Please provide a version"
 	exit 1
 endif
-	$(BUMP_VERSION) --version=$(version) --tag-prefix=v main.go
+	$(BUMP_VERSION) --tag-prefix=v $(version) main.go
 	git push origin --tags
