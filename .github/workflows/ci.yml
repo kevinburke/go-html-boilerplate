@@ -2,16 +2,13 @@ on: [push, pull_request]
 name: Test
 jobs:
   test:
-    strategy:
-      matrix:
-        go-version: [1.19.x]
     runs-on: ubuntu-latest
     steps:
     - name: Install Go
-      uses: actions/setup-go@v3
-      with:
-        go-version: ${{ matrix.go-version }}
-    - uses: actions/checkout@v3
+      # https://github.com/actions/setup-go/tags
+      uses: actions/setup-go@v5
+      # https://github.com/actions/checkout/tags
+    - uses: actions/checkout@v4
       with:
          path: './src/github.com/kevinburke/go-html-boilerplate'
     # staticcheck needs this for GOPATH
@@ -21,6 +18,6 @@ jobs:
         echo "PATH=$GITHUB_WORKSPACE/bin:$PATH" >> $GITHUB_ENV
     - name: Run tests
       run: |
-        go get honnef.co/go/tools/cmd/staticcheck
+        GO111MODULE=on go install honnef.co/go/tools/cmd/staticcheck@latest
         make test
       working-directory: './src/github.com/kevinburke/go-html-boilerplate'

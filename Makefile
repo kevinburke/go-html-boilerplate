@@ -16,14 +16,14 @@ GO_FILES = $(shell find . -name '*.go')
 GO_NOASSET_FILES := $(filter-out ./assets/bindata.go,$(GO_FILES))
 
 test: vet
-	go list ./... | grep -v vendor | xargs go test
+	go test -trimpath ./...
 
 vet:
 	staticcheck ./...
-	go list ./... | grep -v vendor | xargs go vet
+	go vet ./...
 
 race-test: vet
-	go list ./... | grep -v vendor | xargs go test -race
+	go test -race -trimpath ./...
 
 diff: $(DIFFER)
 	$(DIFFER) $(MAKE) assets
