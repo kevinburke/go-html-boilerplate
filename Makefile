@@ -73,11 +73,11 @@ $(DIFFER):
 $(RELEASE):
 	go get -u github.com/aktau/github-release
 
-# Run "GITHUB_TOKEN=my-token make release version=0.x.y" to release a new version.
+# Run "GITHUB_TOKEN=my-token make release version=major|minor|patch" to release a new version.
 release: diff race-test | $(BUMP_VERSION) $(RELEASE)
 ifndef version
 	@echo "Please provide a version"
 	exit 1
 endif
-	$(BUMP_VERSION) --version=$(version) main.go
+	$(BUMP_VERSION) --version=$(version) --tag-prefix=v main.go
 	git push origin --tags
