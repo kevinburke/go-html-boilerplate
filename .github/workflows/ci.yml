@@ -6,9 +6,9 @@ jobs:
     steps:
     - name: Install Go
       # https://github.com/actions/setup-go/tags
-      uses: actions/setup-go@v5
+      uses: actions/setup-go@v6
       # https://github.com/actions/checkout/tags
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       with:
          path: './src/github.com/kevinburke/go-html-boilerplate'
     # staticcheck needs this for GOPATH
