@@ -1,23 +1,42 @@
-on: [push, pull_request]
-name: Test
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
-    runs-on: ubuntu-latest
+    name: ${{ matrix.os }} / Go stable
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
     steps:
-    - name: Install Go
-      # https://github.com/actions/setup-go/tags
-      uses: actions/setup-go@v5
-      # https://github.com/actions/checkout/tags
-    - uses: actions/checkout@v4
-      with:
-         path: './src/github.com/kevinburke/go-html-boilerplate'
-    # staticcheck needs this for GOPATH
-    - run: |
-        echo "GOPATH=$GITHUB_WORKSPACE" >> $GITHUB_ENV
-        echo "GO111MODULE=off" >> $GITHUB_ENV
-        echo "PATH=$GITHUB_WORKSPACE/bin:$PATH" >> $GITHUB_ENV
-    - name: Run tests
-      run: |
-        GO111MODULE=on go install honnef.co/go/tools/cmd/staticcheck@latest
-        make test
-      working-directory: './src/github.com/kevinburke/go-html-boilerplate'
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version: stable
+          check-latest: true
+          cache-dependency-path: go.sum
+
+      - name: Show Go version
+        run: go version
+
+      - name: Lint and test
+        run: |
+          go run honnef.co/go/tools/cmd/staticcheck@latest ./...
+          go vet ./...
+          go test -trimpath ./...
