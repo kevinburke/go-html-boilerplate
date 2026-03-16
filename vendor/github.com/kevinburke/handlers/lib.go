@@ -25,12 +25,12 @@ import (
 	"sync"
 	"time"
 
-	uuid "github.com/gofrs/uuid"
+	uuid "github.com/gofrs/uuid/v5"
 	"github.com/kevinburke/rest"
 	"github.com/kevinburke/rest/resterror"
 )
 
-const Version = "0.47.0"
+const Version = "0.48.0"
 
 func push(w http.ResponseWriter, target string, opts *http.PushOptions) error {
 	if pusher, ok := w.(http.Pusher); ok {
