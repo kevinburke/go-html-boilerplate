@@ -3,7 +3,7 @@ module github.com/kevinburke/go-html-boilerplate
 go 1.24.0
 
 require (
-	github.com/goccy/go-yaml v1.18.0
+	github.com/goccy/go-yaml v1.19.2
 	github.com/kevinburke/handlers v0.48.0
 	github.com/kevinburke/nacl v0.9.0
 	github.com/kevinburke/rest v0.0.0-20260226201626-8eed36da8c35
