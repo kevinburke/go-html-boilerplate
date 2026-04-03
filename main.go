@@ -100,7 +100,7 @@ func (s *static) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 // Render a template, or a server error.
-func render(w http.ResponseWriter, r *http.Request, tpl *template.Template, name string, data interface{}) {
+func render(w http.ResponseWriter, r *http.Request, tpl *template.Template, name string, data any) {
 	buf := new(bytes.Buffer)
 	if err := tpl.ExecuteTemplate(buf, name, data); err != nil {
 		rest.ServerError(w, r, err)
